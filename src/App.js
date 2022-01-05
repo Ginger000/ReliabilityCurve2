@@ -91,17 +91,31 @@ const App = () => {
     // console.log("new Ratio" ,startLoadingRatio);
   }
 
-  const BoxLand = ({position, args, color, scale}) => {
+  const BoxLand = ({position, args, color, GSIRatio, height, type}) => {
     const mesh = useRef(null);
     useEffect(()=>{
-      mesh.current.geometry.translate(0.5, -0.5, -0.5)
+      mesh.current.geometry.translate(0, 1.5, -3)
     })
+    let a = 1-GSIRatio;
+    const {hardScale,GSIScale,soilScale} = useSpring({
+      hardScale:[1, 1, a],
+      GSIScale:[1,1,GSIRatio],
+      soilScale:[1,height,GSIRatio],
+      config:{duration:2000}
+    })
+
+    const hash = {
+      "hard":hardScale,
+      "GSI":GSIScale,
+      "soil":soilScale
+    }
+
     return (
       
-      <mesh position={position} ref={mesh} scale={scale}>
+      <animated.mesh position={position} ref={mesh} scale={hash[type]}>
         <boxBufferGeometry attach="geometry" args={args}  />
         <meshStandardMaterial attach="material" color={color} />
-      </mesh>
+      </animated.mesh>
      
     )
   }
@@ -164,18 +178,14 @@ const App = () => {
           {/* <primitive object={new THREE.AxesHelper(10)} /> */}
           <axesHelper args={[10]} />
           <group position={[0, 0, 3]}>
-            <BoxLand position={[0,0,0]} scale={[4,0.3,6]} />
-            <BoxLand position={[0,-0.3,0]} scale={[4,3,6]}  color='pink'/>
+            <BoxLand position={[0,1.6,0]} args={[4.01,0.31,6.01]} GSIRatio={loadingRatio} type="hard" />
+            {/* 6*loadingRatio/(loadingRatio + 1) */}
+            {/* <BoxLand position={[0,1.6,0]} args={[4,0.3,6]} GSIRatio={loadingRatio} color='green' type="GSI" /> */}
+            {/* <BoxLand position={[0,0,0]} args={[5,1,7]} GSIRatio={loadingRatio} height={depthUnit[depth]} color='yellow' type="soil" /> */}
+            <BoxLand position={[0,0,0]} args={[4,3,6]}  color='pink'/>
             {console.log("depthInBox", depth)}
             {console.log(depthUnit)}
-            {
-              
-              depth.map(d=>{
-                return(
-                  <BoxLand key={d} position={[0,-0.3,0]} scale={[4,depthUnit[d],6]}  color='yellow' />
-                )
-              })
-            }
+            
           </group>
           <OrbitControls makeDefault />
           
