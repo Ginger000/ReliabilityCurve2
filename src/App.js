@@ -11,6 +11,38 @@ import test from "./testData.js"
 import DATA from "./Data.js"
 import { Button, Box} from "@mui/material";
 import { AxesHelper } from "three";
+
+const BoxLand = ({position, args, color, GSIRatio, height, type}) => {
+  const mesh = useRef(null);
+  useEffect(()=>{
+    mesh.current.geometry.translate(0, 1.5, -3)
+  })
+  let a = 1-GSIRatio;
+  const {hardScale,GSIScale,soilScale} = useSpring({
+    hardScale:[1, 1, a],
+    GSIScale:[1,1,GSIRatio],
+    soilScale:[1,height,GSIRatio],
+    config:{duration:2000}
+  })
+
+  const hash = {
+    "hard":hardScale,
+    "GSI":GSIScale,
+    "soil":soilScale
+  }
+
+  return (
+    
+    <animated.mesh position={position} ref={mesh} scale={hash[type]}>
+      <boxBufferGeometry attach="geometry" args={args}  />
+      <meshStandardMaterial attach="material" color={color} />
+    </animated.mesh>
+   
+  )
+}
+
+
+
 const App = () => {
   const [reduction, setReduction] = useState(40);
   const [duration, setDuration] = useState(2);
@@ -91,34 +123,7 @@ const App = () => {
     // console.log("new Ratio" ,startLoadingRatio);
   }
 
-  const BoxLand = ({position, args, color, GSIRatio, height, type}) => {
-    const mesh = useRef(null);
-    useEffect(()=>{
-      mesh.current.geometry.translate(0, 1.5, -3)
-    })
-    let a = 1-GSIRatio;
-    const {hardScale,GSIScale,soilScale} = useSpring({
-      hardScale:[1, 1, a],
-      GSIScale:[1,1,GSIRatio],
-      soilScale:[1,height,GSIRatio],
-      config:{duration:2000}
-    })
-
-    const hash = {
-      "hard":hardScale,
-      "GSI":GSIScale,
-      "soil":soilScale
-    }
-
-    return (
-      
-      <animated.mesh position={position} ref={mesh} scale={hash[type]}>
-        <boxBufferGeometry attach="geometry" args={args}  />
-        <meshStandardMaterial attach="material" color={color} />
-      </animated.mesh>
-     
-    )
-  }
+  
   
   
 
