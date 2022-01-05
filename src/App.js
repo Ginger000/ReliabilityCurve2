@@ -1,7 +1,8 @@
 import "./App.css"
 import * as THREE from "three";
 import { BoxHelper, CameraHelper } from "three";
-import {useSpring, a} from "react-spring"
+import { useSpring, animated,config } from '@react-spring/three'
+
 import MySlider from "./components/MySlider";
 import React, {useState, useRef, useEffect, useLayoutEffect} from 'react';
 import { Canvas, useFrame, useResource } from "@react-three/fiber";
@@ -90,16 +91,16 @@ const App = () => {
     // console.log("new Ratio" ,startLoadingRatio);
   }
 
-  const BoxLand = (props) => {
+  const BoxLand = ({position, args, color, scale}) => {
     const mesh = useRef(null);
     useEffect(()=>{
       mesh.current.geometry.translate(0.5, -0.5, -0.5)
     })
     return (
       
-      <mesh position={props.position} ref={mesh} {...props}>
-        <boxBufferGeometry attach="geometry" args={props.args} />
-        <meshStandardMaterial attach="material" color={props.color} />
+      <mesh position={position} ref={mesh} scale={scale}>
+        <boxBufferGeometry attach="geometry" args={args}  />
+        <meshStandardMaterial attach="material" color={color} />
       </mesh>
      
     )
