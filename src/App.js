@@ -1,10 +1,15 @@
 import "./App.css"
+import * as THREE from "three";
+import { BoxHelper, CameraHelper } from "three";
+import {useSpring, a} from "react-spring"
 import MySlider from "./components/MySlider";
-import React, {useState} from 'react';
-
+import React, {useState, useRef, useEffect, useLayoutEffect} from 'react';
+import { Canvas, useFrame, useResource } from "@react-three/fiber";
+import {Icosahedron, OrthographicCamera, OrbitControls, useHelper} from '@react-three/drei'
 import test from "./testData.js"
 import DATA from "./Data.js"
 import { Button, Box} from "@mui/material";
+import { AxesHelper } from "three";
 const App = () => {
   const [reduction, setReduction] = useState(40);
   const [duration, setDuration] = useState(2);
@@ -15,8 +20,8 @@ const App = () => {
   // const startLoadingRatio = []
   const [startDepth, setStartDepth] = useState([]);
   const [startLoadingRatio, setStartLoadingRatio] = useState([]);
-  const [depth, setDepth] = useState(startDepth[0]);
-  const [loadingRatio, setLoadingRatio] = useState(startLoadingRatio[0]);
+  const [depth, setDepth] = useState([]);
+  const [loadingRatio, setLoadingRatio] = useState([]);
   const changeReduction =(evt, value)=>{
     setReduction(value);
     // console.log("reduction ",value);
@@ -38,17 +43,25 @@ const App = () => {
     // console.log("surfaceType ", value);
   }
   const changeDepth = (evt, value)=>{
-    setDepth([value]);
+    setDepth(value);
     console.log("Depth ", value);
+    // if(value)
   }
   const changeRatio = (evt, value)=>{
-    setLoadingRatio([value]);
+    setLoadingRatio(value);
     console.log("loadingRatio ", value);
   }
   
+  const depthUnit = {
+    12:1,
+    18:1.5,
+    24:2,
+    30:2.5
+  }
 
   const generate = (duration, soilType, designStorm, surfaceType, startDepth, startLoadingRatio) => {
     const scenarioArr = DATA[surfaceType][soilType][duration];
+    //pick all the reliablity === 1 scenarios that fit the input context
     const scenarios = scenarioArr.filter(s=>s["designStorm"] === designStorm && s["reliability"] === 1);
     console.log(scenarios);
     generateOutputSlider(scenarios, startDepth, startLoadingRatio);
@@ -56,72 +69,117 @@ const App = () => {
 
   const generateOutputSlider = (scenarios, startDepth, startLoadingRatio) => {
     const rand = Math.floor(Math.random()*scenarios.length);
-    console.log("old Depth ",startDepth);
-    console.log("old Ratio ",startLoadingRatio);
+    // sort loadingRatio (ascending) & then depth (ascending)
+    //actually we don't have to sort it since our orignal data set is sorted
+    scenarios.sort((a,b)=>{
+      if(a.loadingRatio === b.loadingRatio){
+        return a.depth - b.depth
+      }
+      return a.loadingRatio-b.loadingRatio
+    });
+    console.log(scenarios);
+    // console.log("old Depth ",startDepth);
+    // console.log("old Ratio ",startLoadingRatio);
 
-    setStartDepth([scenarios[rand]["depth"]]);
-    setStartLoadingRatio([scenarios[rand]["loadingRatio"]])
-    setDepth(startDepth)
-    setLoadingRatio(startLoadingRatio)
+    setStartDepth([scenarios[0]["depth"]]);
+    setStartLoadingRatio([scenarios[0]["loadingRatio"]])
+    setDepth([scenarios[0]["depth"]])
+    setLoadingRatio([scenarios[0]["loadingRatio"]])
 
-    console.log("new Depth " ,startDepth);
-    console.log("new Ratio" ,startLoadingRatio);
+    // console.log("new Depth " ,startDepth);
+    // console.log("new Ratio" ,startLoadingRatio);
   }
 
-  const a= 1;
-  const b = 2;
-  // const test = {
-  //   0:{
-  //       1:{
-  //           2:[3,4,5,6]
-  //       }
-  //   }
-  // }
-
+  const BoxLand = (props) => {
+    const mesh = useRef(null);
+    useEffect(()=>{
+      mesh.current.geometry.translate(0.5, -0.5, -0.5)
+    })
+    return (
+      
+      <mesh position={props.position} ref={mesh} {...props}>
+        <boxBufferGeometry attach="geometry" args={props.args} />
+        <meshStandardMaterial attach="material" color={props.color} />
+      </mesh>
+     
+    )
+  }
+  
+  
 
   return (
     
-    <div>Ginger
-      {a}
-      {test[0][1][2]}
-      {DATA[0][3][2][0]["depth"]}
-      
-      <MySlider title="Reduction Amount" min={40} max={80} step={null} marks={[{value: 40,label: '40%'},{value: 80,label: '80%'}]} onChange={changeReduction} defaultVal={40}/>
-      <MySlider title="Duration" min={2} max={24} step={null} marks={[{value: 2,label: '2hrs'},{value: 24,label: '24hrs'}]} onChange={changeDuration} defaultVal={2} />
-      <MySlider title="Soil Type" min={1} max={3} step={null} marks={[{value: 1,label: 'Fine'},{value: 2,label: 'Mix'},{value: 3,label: 'corase'}]} onChange={changeSoilType} defaultVal={1} />
-      <MySlider title="Design Storm" min={0} max={5} step={0.1} marks={[{value: 0,label: "0"},{value: 1,label: "1"},{value: 2,label: '2'},{value: 3,label: '3'},{value: 4,label: '4'},{value: 5,label: '5'}]} onChange={changeDesignStorm} defaultVal={0} />
-      <MySlider title="Surface Type" min={0} max={1} step={null} marks={[{value: 0,label: "Planted"},{value: 1,label: 'Paved'}]} onChange={changeSurfaceType} defaultVal={0} />
-      {/* onClick={generate} */}
-      {/* onClick={generate(duration, soilType, designStorm, surfaceType)} */}
-      <Button sx={{ml: 4, mt:4 }} variant="contained" onClick={()=>generate(duration, soilType, designStorm, surfaceType, startDepth, startLoadingRatio)} >GENERATE</Button>
-      <Box  sx={{
-      
-        mt:4 ,
-        width: 500,
-        height: 300,
-        // border: '1px dashed grey'
-      }}>
-        {console.log("check Depth ",startDepth)}
-        {startDepth.map((d, idx)=>{
-            console.log("runned");
-            //???The point is that I didn't add return?
-            return(
-
-
-            <MySlider key={idx} title="Depth" min={12} max={30} step={null} marks={[{value: 12,label: "12"},{value: 18,label: '18'},{value: 24,label: '24'},{value: 30,label: '30'}]} onChange={changeDepth} defaultVal={d} />
-
-            )
-            
+    <div className="view">
+      <div className="leftControlPanel">
+        <MySlider title="Reduction Amount" min={40} max={80} step={null} marks={[{value: 40,label: '40%'},{value: 80,label: '80%'}]} onChange={changeReduction} defaultVal={40}/>
+        <MySlider title="Duration" min={2} max={24} step={null} marks={[{value: 2,label: '2hrs'},{value: 24,label: '24hrs'}]} onChange={changeDuration} defaultVal={2} />
+        <MySlider title="Soil Type" min={1} max={3} step={null} marks={[{value: 1,label: 'Fine'},{value: 2,label: 'Mix'},{value: 3,label: 'corase'}]} onChange={changeSoilType} defaultVal={1} />
+        <MySlider title="Design Storm" min={0} max={5} step={0.1} marks={[{value: 0,label: "0"},{value: 1,label: "1"},{value: 2,label: '2'},{value: 3,label: '3'},{value: 4,label: '4'},{value: 5,label: '5'}]} onChange={changeDesignStorm} defaultVal={0} />
+        <MySlider title="Surface Type" min={0} max={1} step={null} marks={[{value: 0,label: "Planted"},{value: 1,label: 'Paved'}]} onChange={changeSurfaceType} defaultVal={0} />
+        {/* onClick={generate} */}
+        {/* onClick={generate(duration, soilType, designStorm, surfaceType)} */}
+        <Button sx={{ml: 4, mt:4 }} variant="contained" onClick={()=>generate(duration, soilType, designStorm, surfaceType, startDepth, startLoadingRatio)} >GENERATE</Button>
+        <Box  sx={{
         
-        })}
-        {console.log("check Ratio ",startLoadingRatio)}
-        {startLoadingRatio.map((l, idx)=>{
-          console.log("runned2");
-          return(
-            <MySlider key={idx} title="Loading Ratio" min={0} max={1} step={null} marks={[{value: 0,label: "0"},{value: 0.125,label: "0.125"},{value: 0.16,label: '0.16'},{value: 0.2,label: '0.2'},{value: 0.33,label: '0.33'},{value: 0.5,label: '0.5'},{value: 1,label: '1'}]} onChange={changeRatio} defaultVal={l} />
-          )
-        })}
-      </Box>
+          mt:4 ,
+          width: 500,
+          height: 300,
+          // border: '1px dashed grey'
+        }}>
+          {console.log("check Depth ",startDepth)}
+          {console.log("current depth", depth)}
+          {startDepth.map((d)=>{
+              console.log("runned");
+              console.log(d)
+              //???The point is that I didn't add return?
+              return(
+              <MySlider key={d} title="Depth" min={12} max={30} step={null} marks={[{value: 12,label: "12"},{value: 18,label: '18'},{value: 24,label: '24'},{value: 30,label: '30'}]} onChange={changeDepth} defaultVal={d} />
+              )
+          })}
+          {console.log("check Ratio ",startLoadingRatio)}
+          {console.log("current ratio", loadingRatio)}
+          {startLoadingRatio.map((l)=>{
+            console.log("runned2");
+            console.log(l)
+            return(
+              <MySlider key={l} title="Loading Ratio" min={0} max={1} step={null} marks={[{value: 0,label: "0"},{value: 0.125,label: "0.125"},{value: 0.16,label: '0.16'},{value: 0.2,label: '0.2'},{value: 0.33,label: '0.33'},{value: 0.5,label: '0.5'},{value: 1,label: '1'}]} onChange={changeRatio} defaultVal={l} />
+            )
+          })}
+        </Box>
+
+      </div>
+      {/* {test[0][1][2]}
+      {DATA[0][3][2][0]["depth"]} */}
+      <div className="right3dPanel">
+        Ginger
+        <Canvas colorManagement  >
+          
+          <OrthographicCamera makeDefault position={[10, 5, -3]} zoom={60} />
+
+          <ambientLight intensity={0.3} />
+          <directionalLight position={[-8, 8, -5]} castShadow intensity={1} shadow-camera-far={70} />
+          {/* <BoxLand position={[0,0,0]} args={[2,3,6]} color='lightblue' /> */}
+          {/* <BoxLand position={[0,1.01,0]} args={[2.01,1,6.01]} scale={[2, 2, 2]} color='grey' /> */}
+          {/* <primitive object={new THREE.AxesHelper(10)} /> */}
+          <axesHelper args={[10]} />
+          <group position={[0, 0, 3]}>
+            <BoxLand position={[0,0,0]} scale={[4,0.3,6]} />
+            <BoxLand position={[0,-0.3,0]} scale={[4,3,6]}  color='pink'/>
+            {console.log("depthInBox", depth)}
+            {console.log(depthUnit)}
+            {
+              
+              depth.map(d=>{
+                return(
+                  <BoxLand key={d} position={[0,-0.3,0]} scale={[4,depthUnit[d],6]}  color='yellow' />
+                )
+              })
+            }
+          </group>
+          <OrbitControls makeDefault />
+          
+        </Canvas>
+      </div>
 
     </div>
   );
