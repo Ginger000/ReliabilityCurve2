@@ -19,3 +19,6 @@ https://stackoverflow.com/questions/65496749/how-to-use-applymatrix4-in-react-th
 
 drei story book
 https://drei.pmnd.rs/?path=/story/performance-adaptive--adaptive-scene-st
+
+
+https://stackoverflow.com/questions/53120972/how-to-call-loading-function-with-react-useeffect-only-once

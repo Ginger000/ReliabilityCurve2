@@ -3,26 +3,27 @@ import * as THREE from "three";
 import { BoxHelper, CameraHelper } from "three";
 import { useSpring, animated,config } from '@react-spring/three'
 
+import GSISurface from "./components/GSISurface";
 import MySlider from "./components/MySlider";
 import React, {useState, useRef, useEffect, useLayoutEffect} from 'react';
 import { Canvas, useFrame, useResource } from "@react-three/fiber";
 import {Icosahedron, OrthographicCamera, OrbitControls, useHelper} from '@react-three/drei'
 import test from "./testData.js"
 import DATA from "./Data.js"
-import { Button, Box} from "@mui/material";
+import { Button, Box, duration} from "@mui/material";
 import { AxesHelper } from "three";
 
 const BoxLand = ({position, args, color, GSIRatio, height, type}) => {
   const mesh = useRef(null);
   useEffect(()=>{
     mesh.current.geometry.translate(0, 1.5, -3)
-  })
+  },[])
   let a = 1-GSIRatio;
   const {hardScale,GSIScale,soilScale} = useSpring({
     hardScale:[1, 1, a],
     GSIScale:[1,1,GSIRatio],
     soilScale:[1,height,GSIRatio],
-    config:{duration:2000}
+    config:{duration:1000}
   })
 
   const hash = {
@@ -44,6 +45,7 @@ const BoxLand = ({position, args, color, GSIRatio, height, type}) => {
 
 
 const App = () => {
+  const [didLoad, setDidLoad] = useState(false);
   const [reduction, setReduction] = useState(40);
   const [duration, setDuration] = useState(2);
   const [soilType, setSoilType] = useState(1);
@@ -182,16 +184,16 @@ const App = () => {
           {/* <BoxLand position={[0,1.01,0]} args={[2.01,1,6.01]} scale={[2, 2, 2]} color='grey' /> */}
           {/* <primitive object={new THREE.AxesHelper(10)} /> */}
           <axesHelper args={[10]} />
-          <group position={[0, 0, 3]}>
+          {/* <group position={[0, 0, 3]}> */}
             <BoxLand position={[0,1.6,0]} args={[4.01,0.31,6.01]} GSIRatio={loadingRatio} type="hard" />
             {/* 6*loadingRatio/(loadingRatio + 1) */}
-            {/* <BoxLand position={[0,1.6,0]} args={[4,0.3,6]} GSIRatio={loadingRatio} color='green' type="GSI" /> */}
+            <GSISurface position={[0,1.6,-6]} args={[4,0.3,6]} GSIRatio={loadingRatio} color='green' />
             {/* <BoxLand position={[0,0,0]} args={[5,1,7]} GSIRatio={loadingRatio} height={depthUnit[depth]} color='yellow' type="soil" /> */}
             <BoxLand position={[0,0,0]} args={[4,3,6]}  color='pink'/>
             {console.log("depthInBox", depth)}
             {console.log(depthUnit)}
             
-          </group>
+          {/* </group> */}
           <OrbitControls makeDefault />
           
         </Canvas>
