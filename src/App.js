@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { BoxHelper, CameraHelper } from "three";
 import { useSpring, animated,config } from '@react-spring/three'
 
+import GSIDepth from "./components/GSIDepth";
 import GSISurface from "./components/GSISurface";
 import MySlider from "./components/MySlider";
 import React, {useState, useRef, useEffect, useLayoutEffect} from 'react';
@@ -18,7 +19,7 @@ const BoxLand = ({position, args, color, GSIRatio, height, type}) => {
   useEffect(()=>{
     mesh.current.geometry.translate(0, 1.5, -3)
   },[])
-  let a = 1-GSIRatio;
+  let a = 1-GSIRatio/(GSIRatio+1);
   const {hardScale,GSIScale,soilScale} = useSpring({
     hardScale:[1, 1, a],
     GSIScale:[1,1,GSIRatio],
@@ -55,8 +56,14 @@ const App = () => {
   // const startLoadingRatio = []
   const [startDepth, setStartDepth] = useState([]);
   const [startLoadingRatio, setStartLoadingRatio] = useState([]);
-  const [depth, setDepth] = useState([]);
-  const [loadingRatio, setLoadingRatio] = useState([]);
+  const [depth, setDepth] = useState(0);
+  const [loadingRatio, setLoadingRatio] = useState(0);
+
+  const prevLoadingRatioRef = useRef();
+  useEffect(()=>{
+    prevLoadingRatioRef.current = loadingRatio;
+  })
+  const prevLoadingRatio = prevLoadingRatioRef.current;
   const changeReduction =(evt, value)=>{
     setReduction(value);
     // console.log("reduction ",value);
@@ -103,7 +110,6 @@ const App = () => {
   }
 
   const generateOutputSlider = (scenarios, startDepth, startLoadingRatio) => {
-    const rand = Math.floor(Math.random()*scenarios.length);
     // sort loadingRatio (ascending) & then depth (ascending)
     //actually we don't have to sort it since our orignal data set is sorted
     scenarios.sort((a,b)=>{
@@ -118,8 +124,8 @@ const App = () => {
 
     setStartDepth([scenarios[0]["depth"]]);
     setStartLoadingRatio([scenarios[0]["loadingRatio"]])
-    setDepth([scenarios[0]["depth"]])
-    setLoadingRatio([scenarios[0]["loadingRatio"]])
+    setDepth(scenarios[0]["depth"])
+    setLoadingRatio(scenarios[0]["loadingRatio"])
 
     // console.log("new Depth " ,startDepth);
     // console.log("new Ratio" ,startLoadingRatio);
@@ -184,16 +190,17 @@ const App = () => {
           {/* <BoxLand position={[0,1.01,0]} args={[2.01,1,6.01]} scale={[2, 2, 2]} color='grey' /> */}
           {/* <primitive object={new THREE.AxesHelper(10)} /> */}
           <axesHelper args={[10]} />
-          {/* <group position={[0, 0, 3]}> */}
+          <group position={[0, 0, 3]}>
             <BoxLand position={[0,1.6,0]} args={[4.01,0.31,6.01]} GSIRatio={loadingRatio} type="hard" />
             {/* 6*loadingRatio/(loadingRatio + 1) */}
-            <GSISurface position={[0,1.6,-6]} args={[4,0.3,6]} GSIRatio={loadingRatio} color='green' />
+            <GSISurface position={[0,1.6,-6]} args={[4,0.3,6]} GSIRatio={loadingRatio} color='green' prevGSIRatio={prevLoadingRatio}/>
+            <GSIDepth position={[0,3,-6]} args={[4.001,2.501,6.001]} GSIRatio={loadingRatio} depth={depthUnit[depth]} color='yellow' prevGSIRatio={prevLoadingRatio}/>
             {/* <BoxLand position={[0,0,0]} args={[5,1,7]} GSIRatio={loadingRatio} height={depthUnit[depth]} color='yellow' type="soil" /> */}
             <BoxLand position={[0,0,0]} args={[4,3,6]}  color='pink'/>
             {console.log("depthInBox", depth)}
             {console.log(depthUnit)}
             
-          {/* </group> */}
+          </group>
           <OrbitControls makeDefault />
           
         </Canvas>
