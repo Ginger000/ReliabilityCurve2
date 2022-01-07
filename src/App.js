@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { BoxHelper, CameraHelper } from "three";
 import { useSpring, animated,config } from '@react-spring/three'
 
+import HardSurface from "./components/HardSurface";
 import GSIDepth from "./components/GSIDepth";
 import GSISurface from "./components/GSISurface";
 import MySlider from "./components/MySlider";
@@ -11,6 +12,7 @@ import { Canvas, useFrame, useResource } from "@react-three/fiber";
 import {Icosahedron, OrthographicCamera, OrbitControls, useHelper} from '@react-three/drei'
 import test from "./testData.js"
 import DATA from "./Data.js"
+import feedbackSearchData from "./feedbackSearchData.json"
 import { Button, Box, duration} from "@mui/material";
 import { AxesHelper } from "three";
 
@@ -46,7 +48,6 @@ const BoxLand = ({position, args, color, GSIRatio, height, type}) => {
 
 
 const App = () => {
-  const [didLoad, setDidLoad] = useState(false);
   const [reduction, setReduction] = useState(40);
   const [duration, setDuration] = useState(2);
   const [soilType, setSoilType] = useState(1);
@@ -58,12 +59,54 @@ const App = () => {
   const [startLoadingRatio, setStartLoadingRatio] = useState([]);
   const [depth, setDepth] = useState(0);
   const [loadingRatio, setLoadingRatio] = useState(0);
+  const [scenarios, setScenarios] = useState([]);
+  const [feedbackScenarios, setFeedbackScenarios] = useState([])
 
   const prevLoadingRatioRef = useRef();
   useEffect(()=>{
     prevLoadingRatioRef.current = loadingRatio;
   })
   const prevLoadingRatio = prevLoadingRatioRef.current;
+
+  // useEffect(()=>{
+  //   // console.log('hahahahahahahah ')
+  //   setFeedbackScenarios(feedbackSearchData.filter(f=>f["depth"] === depth && f["loadingRatio"] === loadingRatio && f["reliability"] === 1 && f["designStorm"] > designStorm));
+  //   console.log("hahahahah", feedbackScenarios)
+  //   console.log("lalalala", scenarios)
+    
+  // },[depth, loadingRatio])
+
+  //limitation 1:when change depth, all input and existing ratio are the limitions
+  //search in scenarios with current ratio
+  //I also need previous depth
+  useEffect(()=>{
+    setFeedbackScenarios(feedbackSearchData.filter(f=>f["depth"] === depth && f["loadingRatio"] === loadingRatio && f["reliability"] === 1 && f["designStorm"] > designStorm));
+    let tempDepthScope = [];
+    //push to sorted array, binary search and use splice to insert
+    for(let s of scenarios) {
+      if(s["loadingRatio"] === loadingRatio){
+        let left = 0;
+        let right = s.length - 1;
+        let mid;
+        let target = s["depth"]
+
+        while(left <= right){
+          mid = Math.floor((left + right)/2)
+          if(target === tempDepthScope[mid]) tempDepthScope.splice(mid, 0, target)
+          if(target < tempDepthScope[mid]) right = mid - 1;
+          if(target > tempDepthScope[mid]) left = mid + 1;
+        }
+        tempDepthScope.splice(left, 0, target)
+      }
+    }
+
+    console.log("tempDepthScope",tempDepthScope)
+    console.log("check which depth it is",depth)
+  },[depth])
+
+
+  //limitation 2:when change ratio, all input and existing depth are limitations
+
   const changeReduction =(evt, value)=>{
     setReduction(value);
     // console.log("reduction ",value);
@@ -104,7 +147,7 @@ const App = () => {
   const generate = (duration, soilType, designStorm, surfaceType, startDepth, startLoadingRatio) => {
     const scenarioArr = DATA[surfaceType][soilType][duration];
     //pick all the reliablity === 1 scenarios that fit the input context
-    const scenarios = scenarioArr.filter(s=>s["designStorm"] === designStorm && s["reliability"] === 1);
+    setScenarios(scenarioArr.filter(s=>s["designStorm"] === designStorm && s["reliability"] === 1));
     console.log(scenarios);
     generateOutputSlider(scenarios, startDepth, startLoadingRatio);
   }
@@ -123,6 +166,7 @@ const App = () => {
     // console.log("old Ratio ",startLoadingRatio);
 
     setStartDepth([scenarios[0]["depth"]]);
+    console.log('hslkjfdljsflg')
     setStartLoadingRatio([scenarios[0]["loadingRatio"]])
     setDepth(scenarios[0]["depth"])
     setLoadingRatio(scenarios[0]["loadingRatio"])
@@ -178,8 +222,8 @@ const App = () => {
       </div>
       {/* {test[0][1][2]}
       {DATA[0][3][2][0]["depth"]} */}
+      {/* {console.log(feedbackSearchData)} */}
       <div className="right3dPanel">
-        Ginger
         <Canvas colorManagement  >
           
           <OrthographicCamera makeDefault position={[10, 5, -3]} zoom={60} />
@@ -191,14 +235,13 @@ const App = () => {
           {/* <primitive object={new THREE.AxesHelper(10)} /> */}
           <axesHelper args={[10]} />
           <group position={[0, 0, 3]}>
-            <BoxLand position={[0,1.6,0]} args={[4.01,0.31,6.01]} GSIRatio={loadingRatio} type="hard" />
-            {/* 6*loadingRatio/(loadingRatio + 1) */}
+            {/* <BoxLand position={[0,1.6,0]} args={[4.01,0.31,6.01]} GSIRatio={loadingRatio} type="hard" /> */}
+
+            <HardSurface position={[0,1.6,0]} args={[4.01,0.31,6.01]} GSIRatio={loadingRatio} color='lightgrey' />
             <GSISurface position={[0,1.6,-6]} args={[4,0.3,6]} GSIRatio={loadingRatio} color='green' prevGSIRatio={prevLoadingRatio}/>
-            <GSIDepth position={[0,3,-6]} args={[4.001,2.501,6.001]} GSIRatio={loadingRatio} depth={depthUnit[depth]} color='yellow' prevGSIRatio={prevLoadingRatio}/>
+            <GSIDepth position={[0,3,-6.01]} args={[4.001,2.501,6.005]} GSIRatio={loadingRatio} depth={depthUnit[depth]} color='yellow' prevGSIRatio={prevLoadingRatio}/>
             {/* <BoxLand position={[0,0,0]} args={[5,1,7]} GSIRatio={loadingRatio} height={depthUnit[depth]} color='yellow' type="soil" /> */}
             <BoxLand position={[0,0,0]} args={[4,3,6]}  color='pink'/>
-            {console.log("depthInBox", depth)}
-            {console.log(depthUnit)}
             
           </group>
           <OrbitControls makeDefault />

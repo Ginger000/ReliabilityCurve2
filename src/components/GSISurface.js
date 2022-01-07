@@ -6,7 +6,7 @@ const GSISurface = ({position, args, color, GSIRatio, prevGSIRatio}) => {
     useEffect(()=>{
         mesh.current.geometry.translate(0, 1.5, 3)
     },[])
-
+    // let a = (GSIRatio/(GSIRatio+1)).toFixed(2)
     const {GSIScale} = useSpring({
 
         // GSIScale:[1,1,GSIRatio/(GSIRatio+1)],
