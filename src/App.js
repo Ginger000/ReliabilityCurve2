@@ -86,10 +86,10 @@ const App = () => {
     for(let s of scenarios) {
       if(s["loadingRatio"] === loadingRatio){
         let left = 0;
-        let right = s.length - 1;
+        let right = tempDepthScope.length - 1;
         let mid;
         let target = s["depth"]
-
+        
         while(left <= right){
           mid = Math.floor((left + right)/2)
           if(target === tempDepthScope[mid]) tempDepthScope.splice(mid, 0, target)
