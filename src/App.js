@@ -13,7 +13,7 @@ import {Icosahedron, OrthographicCamera, OrbitControls, useHelper} from '@react-
 import test from "./testData.js"
 import DATA from "./Data.js"
 import feedbackSearchData from "./feedbackSearchData.json"
-import { Button, Box, duration} from "@mui/material";
+import { Button, Box, Alert} from "@mui/material";
 import { AxesHelper } from "three";
 
 const BoxLand = ({position, args, color, GSIRatio, height, type}) => {
@@ -61,24 +61,18 @@ const App = () => {
   const [loadingRatio, setLoadingRatio] = useState(0);
   const [scenarios, setScenarios] = useState([]);
   const [feedbackScenarios, setFeedbackScenarios] = useState([])
+  const [depthTitle, setDepthTitle] = useState("Depth")
+
 
   const prevLoadingRatioRef = useRef();
+  const prevDepthRef = useRef();
+
   useEffect(()=>{
     prevLoadingRatioRef.current = loadingRatio;
+    prevDepthRef.current = depth;
   })
   const prevLoadingRatio = prevLoadingRatioRef.current;
-
-  // useEffect(()=>{
-  //   // console.log('hahahahahahahah ')
-  //   setFeedbackScenarios(feedbackSearchData.filter(f=>f["depth"] === depth && f["loadingRatio"] === loadingRatio && f["reliability"] === 1 && f["designStorm"] > designStorm));
-  //   console.log("hahahahah", feedbackScenarios)
-  //   console.log("lalalala", scenarios)
-    
-  // },[depth, loadingRatio])
-
-  //limitation 1:when change depth, all input and existing ratio are the limitions
-  //search in scenarios with current ratio
-  //I also need previous depth
+  const prevDepth = prevDepthRef.current
   useEffect(()=>{
     setFeedbackScenarios(feedbackSearchData.filter(f=>f["depth"] === depth && f["loadingRatio"] === loadingRatio && f["reliability"] === 1 && f["designStorm"] > designStorm));
     let tempDepthScope = [];
@@ -99,9 +93,19 @@ const App = () => {
         tempDepthScope.splice(left, 0, target)
       }
     }
-
-    console.log("tempDepthScope",tempDepthScope)
-    console.log("check which depth it is",depth)
+    if(depth < tempDepthScope[0]) {
+      changeDepth2(prevDepth);
+      setDepthTitle(
+        <div>
+          Depth 
+          <Alert variant="outlined" severity="warning" > 
+            The depth cannot be smaller than {tempDepthScope[0]} inches in terms of your inputs and current loading ratio 
+          </Alert> 
+        </div>
+      )
+    } else if (depth > tempDepthScope[0]){
+      setDepthTitle("Depth")
+    }
   },[depth])
 
 
@@ -127,11 +131,20 @@ const App = () => {
     setSurfaceType(value);
     // console.log("surfaceType ", value);
   }
+
+  //this is to make slider a controlled slider
   const changeDepth = (evt, value)=>{
     setDepth(value);
     console.log("Depth ", value);
     // if(value)
   }
+  //this is to change depth slider value directly
+  const changeDepth2 = (value)=>{
+    setDepth(value);
+    console.log("Depth ", value);
+    // if(value)
+  }
+
   const changeRatio = (evt, value)=>{
     setLoadingRatio(value);
     console.log("loadingRatio ", value);
@@ -205,7 +218,7 @@ const App = () => {
               console.log(d)
               //???The point is that I didn't add return?
               return(
-              <MySlider key={d} title="Depth" min={12} max={30} step={null} marks={[{value: 12,label: "12"},{value: 18,label: '18'},{value: 24,label: '24'},{value: 30,label: '30'}]} onChange={changeDepth} defaultVal={d} />
+              <MySlider key={d} title= {depthTitle} min={12} max={30} step={null} marks={[{value: 12,label: "12"},{value: 18,label: '18'},{value: 24,label: '24'},{value: 30,label: '30'}]} onChange={changeDepth} defaultVal={d} value={depth} />
               )
           })}
           {console.log("check Ratio ",startLoadingRatio)}

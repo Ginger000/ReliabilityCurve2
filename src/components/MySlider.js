@@ -8,7 +8,7 @@ function valuetext(value) {
 }
 
 const MySlider = (props) => {
-    const { min, max, marks, title, onChange, step, defaultVal, } = props;
+    const { min, max, marks, title, onChange, step, defaultVal, value} = props;
     const valueLabelFormat = (value) => {
       //error if using Array.find()
       if(title !== "Design Storm")
@@ -34,7 +34,7 @@ const MySlider = (props) => {
                 valueLabelDisplay="auto"
                 marks={marks}
                 onChange={onChange}
-                
+                value = {value}
             />
         </Box>
     );
