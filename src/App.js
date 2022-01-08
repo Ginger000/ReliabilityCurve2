@@ -62,54 +62,83 @@ const App = () => {
   const [scenarios, setScenarios] = useState([]);
   const [feedbackScenarios, setFeedbackScenarios] = useState([])
   const [depthTitle, setDepthTitle] = useState("Depth")
-
+  const [ratioTitle, setRatioTitle] = useState("Loading Ratio")
 
   const prevLoadingRatioRef = useRef();
-  const prevDepthRef = useRef();
+  // const prevDepthRef = useRef();
 
   useEffect(()=>{
     prevLoadingRatioRef.current = loadingRatio;
-    prevDepthRef.current = depth;
+    // prevDepthRef.current = depth;
   })
   const prevLoadingRatio = prevLoadingRatioRef.current;
-  const prevDepth = prevDepthRef.current
+  // const prevDepth = prevDepthRef.current
+
+  //Feedback and limitation changes every time either depth changes or ratio changes
+  //Limitation-1
   useEffect(()=>{
     setFeedbackScenarios(feedbackSearchData.filter(f=>f["depth"] === depth && f["loadingRatio"] === loadingRatio && f["reliability"] === 1 && f["designStorm"] > designStorm));
-    let tempDepthScope = [];
+    checkLimitation(depth, loadingRatio, "depth", "loadingRatio")
+  },[depth])
+  //limitation-2:when change ratio, all input and existing depth are limitations
+  useEffect(()=>{
+    checkLimitation(loadingRatio, depth, "loadingRatio", "depth")
+  },[loadingRatio])
+
+
+  const checkLimitation = (changed, controlled, changedStr, controlledStr)=>{
+    let tempScope = [];
     //push to sorted array, binary search and use splice to insert
     for(let s of scenarios) {
-      if(s["loadingRatio"] === loadingRatio){
+      if(s[controlledStr] === controlled){
         let left = 0;
-        let right = tempDepthScope.length - 1;
+        let right = tempScope.length - 1;
         let mid;
-        let target = s["depth"]
+        let target = s[changedStr]
         
         while(left <= right){
           mid = Math.floor((left + right)/2)
-          if(target === tempDepthScope[mid]) tempDepthScope.splice(mid, 0, target)
-          if(target < tempDepthScope[mid]) right = mid - 1;
-          if(target > tempDepthScope[mid]) left = mid + 1;
+          if(target === tempScope[mid]) tempScope.splice(mid, 0, target)
+          if(target < tempScope[mid]) right = mid - 1;
+          if(target > tempScope[mid]) left = mid + 1;
         }
-        tempDepthScope.splice(left, 0, target)
+        tempScope.splice(left, 0, target)
       }
     }
-    if(depth < tempDepthScope[0]) {
-      changeDepth2(prevDepth);
-      setDepthTitle(
-        <div>
-          Depth 
-          <Alert variant="outlined" severity="warning" > 
-            The depth cannot be smaller than {tempDepthScope[0]} inches in terms of your inputs and current loading ratio 
-          </Alert> 
-        </div>
-      )
-    } else if (depth > tempDepthScope[0]){
-      setDepthTitle("Depth")
+    if(changed < tempScope[0]) {
+      if(changedStr === "depth") {
+        changeDepth2(tempScope[0]);
+        setDepthTitle(
+          <div>
+            Depth
+            <Alert variant="outlined" severity="warning" > 
+              The {changedStr} cannot be smaller than {tempScope[0]} inches in terms of your inputs and current loading ratio 
+            </Alert> 
+          </div>
+        )
+      }
+      if(changedStr==="loadingRatio"){
+        changeRatio2(tempScope[0]);
+        setRatioTitle(
+          <div>
+            Loading Ratio
+            <Alert variant="outlined" severity="warning" > 
+              The {changedStr} cannot be smaller than {tempScope[0]} in terms of your inputs and current loading ratio 
+            </Alert> 
+          </div>
+        )
+      }
+      
+    } else if (changed > tempScope[0]){
+      if(changedStr === "depth"){
+        setDepthTitle(changedStr)
+      }
+      if(changedStr==="loadingRatio"){
+        setRatioTitle(changedStr)
+      }
     }
-  },[depth])
+  }
 
-
-  //limitation 2:when change ratio, all input and existing depth are limitations
 
   const changeReduction =(evt, value)=>{
     setReduction(value);
@@ -149,6 +178,10 @@ const App = () => {
     setLoadingRatio(value);
     console.log("loadingRatio ", value);
   }
+
+  const changeRatio2 = (value)=>{
+    setLoadingRatio(value);
+  }
   
   const depthUnit = {
     12:1,
@@ -179,6 +212,8 @@ const App = () => {
     // console.log("old Ratio ",startLoadingRatio);
 
     setStartDepth([scenarios[0]["depth"]]);
+    setDepthTitle("Depth")
+    setRatioTitle("Loading Ratio")
     console.log('hslkjfdljsflg')
     setStartLoadingRatio([scenarios[0]["loadingRatio"]])
     setDepth(scenarios[0]["depth"])
@@ -227,7 +262,7 @@ const App = () => {
             console.log("runned2");
             console.log(l)
             return(
-              <MySlider key={l} title="Loading Ratio" min={0} max={1} step={null} marks={[{value: 0,label: "0"},{value: 0.125,label: "0.125"},{value: 0.16,label: '0.16'},{value: 0.2,label: '0.2'},{value: 0.33,label: '0.33'},{value: 0.5,label: '0.5'},{value: 1,label: '1'}]} onChange={changeRatio} defaultVal={l} />
+              <MySlider key={l} title={ratioTitle} min={0} max={1} step={null} marks={[{value: 0,label: "0"},{value: 0.125,label: "0.125"},{value: 0.16,label: '0.16'},{value: 0.2,label: '0.2'},{value: 0.33,label: '0.33'},{value: 0.5,label: '0.5'},{value: 1,label: '1'}]} onChange={changeRatio} defaultVal={l} value={loadingRatio} />
             )
           })}
         </Box>
