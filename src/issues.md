@@ -22,3 +22,7 @@ https://drei.pmnd.rs/?path=/story/performance-adaptive--adaptive-scene-st
 
 
 https://stackoverflow.com/questions/53120972/how-to-call-loading-function-with-react-useeffect-only-once
+
+https://stackoverflow.com/questions/54954091/how-to-use-callback-with-usestate-hook-in-react
+
+

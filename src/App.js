@@ -82,21 +82,28 @@ const App = () => {
     checkLimitation(loadingRatio, depth, "loadingRatio", "depth")
     //this probably needs call back. 
     //we need to wait the checkLimitation finishes and than give recommendation
-    setFeedbackScenarios(feedbackSearchData.filter(f=>f["depth"] === depth && f["loadingRatio"] === loadingRatio && f["reliability"] === 1 && f["designStorm"] > designStorm).sort((a,b)=>a["designStorm"] - b["designStorm"]));
-    stormRecommendation(feedbackScenarios);
-    console.log("feedbackScenarios", feedbackScenarios)
+    //&& f["designStorm"] > designStorm
+    recommendDesignStorm(depth, loadingRatio, soilType, duration, surfaceType, reduction)
   },[depth, loadingRatio])
- 
+
+  useEffect(()=>{
+    console.log(feedbackScenarios)
+    stormRecommendation(feedbackScenarios)
+  }, [feedbackScenarios])
+  
   const stormRecommendation = (feedbackScenarios) =>{
+  
     if(feedbackScenarios.length !== 0) {
-      const lowerBound = feedbackScenarios[0]
-      if(feedbackScenarios[feedbackScenarios.length-1] > lowerBound) {
-        const upperBound = feedbackScenarios[feedbackScenarios.length-1]
+      const lowerBound = feedbackScenarios[0]["designStorm"]
+      console.log("lowerBound",lowerBound)
+      if(feedbackScenarios[feedbackScenarios.length-1]["designStorm"] > lowerBound) {
+        const upperBound = feedbackScenarios[feedbackScenarios.length-1]["designStorm"]
+        console.log("upperBound",upperBound)
         setDesignStormTitle(
           <div>
               Design Storm
               <Alert variant="outlined" severity="info" > 
-                Your design storm could be increased to the range {lowerBound} inches to {upperBound}
+                You could adjust the design storm within the range {lowerBound} inches to {upperBound} inches
               </Alert> 
           </div>
         )
@@ -105,8 +112,9 @@ const App = () => {
       }
       
     } else {
-
+      setDesignStormTitle("Design Storm")
     }
+    console.log("finish recommendation")
   }
 
   const checkLimitation = (changed, controlled, changedStr, controlledStr)=>{
@@ -148,7 +156,7 @@ const App = () => {
           <div>
             Loading Ratio
             <Alert variant="outlined" severity="warning" > 
-              The {changedStr} cannot be smaller than {tempScope[0]} in terms of your inputs and current loading ratio 
+              The {changedStr} cannot be smaller than {tempScope[0]} in terms of your inputs and current GSI depth
             </Alert> 
           </div>
         )
@@ -166,6 +174,16 @@ const App = () => {
     }
   }
 
+  const recommendDesignStorm = (depth, loadingRatio, soilType, duration, surfaceType, reduction)=>{
+    setFeedbackScenarios(
+      feedbackSearchData.filter(f=>f["depth"] === depth 
+            && f["loadingRatio"] === loadingRatio && f["reliability"] === 1 
+            && f["soilType"] === soilType
+            && f["duration"] === duration 
+            && f["surface"] === surfaceType
+            && f["reduction"] === reduction).sort((a,b)=>a["designStorm"] - b["designStorm"])
+    )
+  }
 
   const changeReduction =(evt, value)=>{
     setReduction(value);
@@ -308,7 +326,7 @@ const App = () => {
           {/* <BoxLand position={[0,0,0]} args={[2,3,6]} color='lightblue' /> */}
           {/* <BoxLand position={[0,1.01,0]} args={[2.01,1,6.01]} scale={[2, 2, 2]} color='grey' /> */}
           {/* <primitive object={new THREE.AxesHelper(10)} /> */}
-          <axesHelper args={[10]} />
+          {/* <axesHelper args={[10]} /> */}
           <group position={[0, 0, 3]}>
             {/* <BoxLand position={[0,1.6,0]} args={[4.01,0.31,6.01]} GSIRatio={loadingRatio} type="hard" /> */}
 
