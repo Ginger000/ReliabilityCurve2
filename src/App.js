@@ -63,6 +63,7 @@ const App = () => {
   const [feedbackScenarios, setFeedbackScenarios] = useState([])
   const [depthTitle, setDepthTitle] = useState("Depth")
   const [ratioTitle, setRatioTitle] = useState("Loading Ratio")
+  const [designStormTitle, setDesignStormTitle] = useState("Design Storm")
 
   const prevLoadingRatioRef = useRef();
   // const prevDepthRef = useRef();
@@ -75,34 +76,36 @@ const App = () => {
   // const prevDepth = prevDepthRef.current
 
   //Feedback and limitation changes every time either depth changes or ratio changes
-  //Limitation-1 nonono
-  //re-check both everytime either depth or loadingRatio changes
-  //this is crucial, how parameters related
+
   useEffect(()=>{
-    setFeedbackScenarios(feedbackSearchData.filter(f=>f["depth"] === depth && f["loadingRatio"] === loadingRatio && f["reliability"] === 1 && f["designStorm"] > designStorm));
     checkLimitation(depth, loadingRatio, "depth", "loadingRatio")
     checkLimitation(loadingRatio, depth, "loadingRatio", "depth")
-    newCheckLimitation(depth, loadingRatio, "aaa", "bbb", scenarios)
+    //this probably needs call back. 
+    //we need to wait the checkLimitation finishes and than give recommendation
+    setFeedbackScenarios(feedbackSearchData.filter(f=>f["depth"] === depth && f["loadingRatio"] === loadingRatio && f["reliability"] === 1 && f["designStorm"] > designStorm).sort((a,b)=>a["designStorm"] - b["designStorm"]));
+    stormRecommendation(feedbackScenarios);
+    console.log("feedbackScenarios", feedbackScenarios)
   },[depth, loadingRatio])
-  //limitation-2:when change ratio, all input and existing depth are limitations
-  // useEffect(()=>{
-  //   checkLimitation(loadingRatio, depth, "loadingRatio", "depth")
-  // },[loadingRatio])
+ 
+  const stormRecommendation = (feedbackScenarios) =>{
+    if(feedbackScenarios.length !== 0) {
+      const lowerBound = feedbackScenarios[0]
+      if(feedbackScenarios[feedbackScenarios.length-1] > lowerBound) {
+        const upperBound = feedbackScenarios[feedbackScenarios.length-1]
+        setDesignStormTitle(
+          <div>
+              Design Storm
+              <Alert variant="outlined" severity="info" > 
+                Your design storm could be increased to the range {lowerBound} inches to {upperBound}
+              </Alert> 
+          </div>
+        )
+      } else {
+        setDesignStormTitle("Design Storm")
+      }
+      
+    } else {
 
-  const newCheckLimitation = (depth, loadingRatio, depthStr, loadingRatioStr, scenarios) => {
-    let tempDepthScope = []
-    let tempRatioScope = []
-    const newScenarios = scenarios.filter(s=>s["depth"] === depth && s["loadingRatio"] === loadingRatio)
-    console.log("newScenarios_1",newScenarios)
-    newScenarios.sort((a,b)=>a["depth"]-b["depth"])
-    console.log("newScenarios_2",newScenarios)
-    for(const n of newScenarios){
-      tempDepthScope.push(n["depth"])
-    }
-    newScenarios.sort((a,b)=>a["loadingRatio"]-b["loadingRatio"])
-    console.log("newScenarios_3",newScenarios)
-    for(const n of newScenarios){
-      tempRatioScope.push(n["loadingRatio"])
     }
   }
 
@@ -151,7 +154,7 @@ const App = () => {
         )
       }
       
-    } else if (changed > tempScope[0]){
+    } else if (changed > tempScope[0] || tempScope.length === 0){
       if(changedStr === "depth"){
         setDepthTitle(changedStr)
 
@@ -258,7 +261,7 @@ const App = () => {
         <MySlider title="Reduction Amount" min={40} max={80} step={null} marks={[{value: 40,label: '40%'},{value: 80,label: '80%'}]} onChange={changeReduction} defaultVal={40}/>
         <MySlider title="Duration" min={2} max={24} step={null} marks={[{value: 2,label: '2hrs'},{value: 24,label: '24hrs'}]} onChange={changeDuration} defaultVal={2} />
         <MySlider title="Soil Type" min={1} max={3} step={null} marks={[{value: 1,label: 'Fine'},{value: 2,label: 'Mix'},{value: 3,label: 'corase'}]} onChange={changeSoilType} defaultVal={1} />
-        <MySlider title="Design Storm" min={0} max={5} step={0.1} marks={[{value: 0,label: "0"},{value: 1,label: "1"},{value: 2,label: '2'},{value: 3,label: '3'},{value: 4,label: '4'},{value: 5,label: '5'}]} onChange={changeDesignStorm} defaultVal={0} />
+        <MySlider title={designStormTitle} min={0} max={5} step={0.1} marks={[{value: 0,label: "0"},{value: 1,label: "1"},{value: 2,label: '2'},{value: 3,label: '3'},{value: 4,label: '4'},{value: 5,label: '5'}]} onChange={changeDesignStorm} defaultVal={0} />
         <MySlider title="Surface Type" min={0} max={1} step={null} marks={[{value: 0,label: "Planted"},{value: 1,label: 'Paved'}]} onChange={changeSurfaceType} defaultVal={0} />
         {/* onClick={generate} */}
         {/* onClick={generate(duration, soilType, designStorm, surfaceType)} */}
