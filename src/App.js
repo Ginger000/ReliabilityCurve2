@@ -75,19 +75,39 @@ const App = () => {
   // const prevDepth = prevDepthRef.current
 
   //Feedback and limitation changes every time either depth changes or ratio changes
-  //Limitation-1
+  //Limitation-1 nonono
+  //re-check both everytime either depth or loadingRatio changes
+  //this is crucial, how parameters related
   useEffect(()=>{
     setFeedbackScenarios(feedbackSearchData.filter(f=>f["depth"] === depth && f["loadingRatio"] === loadingRatio && f["reliability"] === 1 && f["designStorm"] > designStorm));
     checkLimitation(depth, loadingRatio, "depth", "loadingRatio")
-  },[depth])
-  //limitation-2:when change ratio, all input and existing depth are limitations
-  useEffect(()=>{
     checkLimitation(loadingRatio, depth, "loadingRatio", "depth")
-  },[loadingRatio])
+    newCheckLimitation(depth, loadingRatio, "aaa", "bbb", scenarios)
+  },[depth, loadingRatio])
+  //limitation-2:when change ratio, all input and existing depth are limitations
+  // useEffect(()=>{
+  //   checkLimitation(loadingRatio, depth, "loadingRatio", "depth")
+  // },[loadingRatio])
 
+  const newCheckLimitation = (depth, loadingRatio, depthStr, loadingRatioStr, scenarios) => {
+    let tempDepthScope = []
+    let tempRatioScope = []
+    const newScenarios = scenarios.filter(s=>s["depth"] === depth && s["loadingRatio"] === loadingRatio)
+    console.log("newScenarios_1",newScenarios)
+    newScenarios.sort((a,b)=>a["depth"]-b["depth"])
+    console.log("newScenarios_2",newScenarios)
+    for(const n of newScenarios){
+      tempDepthScope.push(n["depth"])
+    }
+    newScenarios.sort((a,b)=>a["loadingRatio"]-b["loadingRatio"])
+    console.log("newScenarios_3",newScenarios)
+    for(const n of newScenarios){
+      tempRatioScope.push(n["loadingRatio"])
+    }
+  }
 
   const checkLimitation = (changed, controlled, changedStr, controlledStr)=>{
-    let tempScope = [];
+    let tempScope = []
     //push to sorted array, binary search and use splice to insert
     for(let s of scenarios) {
       if(s[controlledStr] === controlled){
@@ -105,6 +125,8 @@ const App = () => {
         tempScope.splice(left, 0, target)
       }
     }
+    console.log("tempScope",tempScope)
+ 
     if(changed < tempScope[0]) {
       if(changedStr === "depth") {
         changeDepth2(tempScope[0]);
@@ -132,9 +154,11 @@ const App = () => {
     } else if (changed > tempScope[0]){
       if(changedStr === "depth"){
         setDepthTitle(changedStr)
+
       }
       if(changedStr==="loadingRatio"){
         setRatioTitle(changedStr)
+        
       }
     }
   }
