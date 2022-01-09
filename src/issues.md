@@ -26,3 +26,4 @@ https://stackoverflow.com/questions/53120972/how-to-call-loading-function-with-r
 https://stackoverflow.com/questions/54954091/how-to-use-callback-with-usestate-hook-in-react
 
 
+https://javascript.plainenglish.io/how-to-make-the-useeffect-hook-not-run-on-initial-render-e42bc3389724

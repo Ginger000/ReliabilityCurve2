@@ -77,6 +77,15 @@ const App = () => {
 
   //Feedback and limitation changes every time either depth changes or ratio changes
 
+  const firstUpdate = useRef(true);
+  useEffect(()=>{
+    if(firstUpdate.current){
+      firstUpdate.current = false;
+      return
+    }
+    generateOutputSlider(scenarios);
+  }, [scenarios])
+
   useEffect(()=>{
     checkLimitation(depth, loadingRatio, "depth", "loadingRatio")
     checkLimitation(loadingRatio, depth, "loadingRatio", "depth")
@@ -235,15 +244,15 @@ const App = () => {
     30:2.5
   }
 
-  const generate = (duration, soilType, designStorm, surfaceType, startDepth, startLoadingRatio) => {
+  const generateScenarios = (duration, soilType, designStorm, surfaceType) => {
     const scenarioArr = DATA[surfaceType][soilType][duration];
     //pick all the reliablity === 1 scenarios that fit the input context
     setScenarios(scenarioArr.filter(s=>s["designStorm"] === designStorm && s["reliability"] === 1));
-    console.log(scenarios);
-    generateOutputSlider(scenarios, startDepth, startLoadingRatio);
+    console.log("this is all generated scenarios",scenarios);
+    
   }
 
-  const generateOutputSlider = (scenarios, startDepth, startLoadingRatio) => {
+  const generateOutputSlider = (scenarios) => {
     // sort loadingRatio (ascending) & then depth (ascending)
     //actually we don't have to sort it since our orignal data set is sorted
     scenarios.sort((a,b)=>{
@@ -283,7 +292,7 @@ const App = () => {
         <MySlider title="Surface Type" min={0} max={1} step={null} marks={[{value: 0,label: "Planted"},{value: 1,label: 'Paved'}]} onChange={changeSurfaceType} defaultVal={0} />
         {/* onClick={generate} */}
         {/* onClick={generate(duration, soilType, designStorm, surfaceType)} */}
-        <Button sx={{ml: 4, mt:4 }} variant="contained" onClick={()=>generate(duration, soilType, designStorm, surfaceType, startDepth, startLoadingRatio)} >GENERATE</Button>
+        <Button sx={{ml: 4, mt:4 }} variant="contained" onClick={()=>generateScenarios(duration, soilType, designStorm, surfaceType)} >GENERATE</Button>
         <Box  sx={{
         
           mt:4 ,
@@ -326,7 +335,7 @@ const App = () => {
           {/* <BoxLand position={[0,0,0]} args={[2,3,6]} color='lightblue' /> */}
           {/* <BoxLand position={[0,1.01,0]} args={[2.01,1,6.01]} scale={[2, 2, 2]} color='grey' /> */}
           {/* <primitive object={new THREE.AxesHelper(10)} /> */}
-          {/* <axesHelper args={[10]} /> */}
+          <axesHelper args={[10]} />
           <group position={[0, 0, 3]}>
             {/* <BoxLand position={[0,1.6,0]} args={[4.01,0.31,6.01]} GSIRatio={loadingRatio} type="hard" /> */}
 
