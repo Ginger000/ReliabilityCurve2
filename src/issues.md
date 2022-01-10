@@ -30,3 +30,7 @@ https://javascript.plainenglish.io/how-to-make-the-useeffect-hook-not-run-on-ini
 
 
 https://stackoverflow.com/questions/60221915/how-to-use-useref-to-reference-latest-value
+
+
+https://github.com/gitname/react-gh-pages
+
