@@ -1,0 +1,1 @@
+{"version":3,"file":"static/css/main.7cf9b753.css","mappings":"AAAA,UACI,gBACJ,CAEA,MACI,YAAa,CACb,YACJ,CACA,cACI,WACJ","sources":["App.css"],"sourcesContent":[".generate{\r\n    margin-left: 1rem;\r\n}\r\n\r\n.view{\r\n    display: flex;\r\n    height: 100vh;\r\n}\r\n.right3dPanel{\r\n    width: 800px;\r\n}"],"names":[],"sourceRoot":""}

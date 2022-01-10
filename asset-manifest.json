@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/ReliabilityCurve2/static/css/main.7cf9b753.css",
+    "main.js": "/ReliabilityCurve2/static/js/main.eab3c5bc.js",
+    "static/js/787.0cfe39e0.chunk.js": "/ReliabilityCurve2/static/js/787.0cfe39e0.chunk.js",
+    "index.html": "/ReliabilityCurve2/index.html",
+    "main.7cf9b753.css.map": "/ReliabilityCurve2/static/css/main.7cf9b753.css.map",
+    "main.eab3c5bc.js.map": "/ReliabilityCurve2/static/js/main.eab3c5bc.js.map",
+    "787.0cfe39e0.chunk.js.map": "/ReliabilityCurve2/static/js/787.0cfe39e0.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.7cf9b753.css",
+    "static/js/main.eab3c5bc.js"
+  ]
+}
