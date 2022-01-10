@@ -64,15 +64,15 @@ const App = () => {
   const [depthTitle, setDepthTitle] = useState("Depth")
   const [ratioTitle, setRatioTitle] = useState("Loading Ratio")
   const [designStormTitle, setDesignStormTitle] = useState("Design Storm")
+  const [isDelay, setIsDelay] = useState(true)
 
-  const prevLoadingRatioRef = useRef();
-  // const prevDepthRef = useRef();
+  const prevLoadingRatio = useRef();
 
   useEffect(()=>{
-    prevLoadingRatioRef.current = loadingRatio;
-    // prevDepthRef.current = depth;
-  })
-  const prevLoadingRatio = prevLoadingRatioRef.current;
+    prevLoadingRatio.current = loadingRatio;
+  },[loadingRatio])
+ 
+  
   // const prevDepth = prevDepthRef.current
 
   //Feedback and limitation changes every time either depth changes or ratio changes
@@ -173,11 +173,11 @@ const App = () => {
       
     } else if (changed > tempScope[0] || tempScope.length === 0){
       if(changedStr === "depth"){
-        setDepthTitle(changedStr)
+        setDepthTitle("Depth")
 
       }
       if(changedStr==="loadingRatio"){
-        setRatioTitle(changedStr)
+        setRatioTitle("Loading Ratio")
         
       }
     }
@@ -300,6 +300,8 @@ const App = () => {
           height: 300,
           // border: '1px dashed grey'
         }}>
+        {console.log("prevGSIRatio", prevLoadingRatio)}
+        {console.log("loadingRatio", loadingRatio)}
           {console.log("check Depth ",startDepth)}
           {console.log("current depth", depth)}
           {startDepth.map((d)=>{
@@ -332,10 +334,7 @@ const App = () => {
 
           <ambientLight intensity={0.3} />
           <directionalLight position={[-8, 8, -5]} castShadow intensity={1} shadow-camera-far={70} />
-          {/* <BoxLand position={[0,0,0]} args={[2,3,6]} color='lightblue' /> */}
-          {/* <BoxLand position={[0,1.01,0]} args={[2.01,1,6.01]} scale={[2, 2, 2]} color='grey' /> */}
-          {/* <primitive object={new THREE.AxesHelper(10)} /> */}
-          <axesHelper args={[10]} />
+          {/* <axesHelper args={[10]} /> */}
           <group position={[0, 0, 3]}>
             {/* <BoxLand position={[0,1.6,0]} args={[4.01,0.31,6.01]} GSIRatio={loadingRatio} type="hard" /> */}
 

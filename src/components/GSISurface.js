@@ -11,7 +11,7 @@ const GSISurface = ({position, args, color, GSIRatio, prevGSIRatio}) => {
 
         // GSIScale:[1,1,GSIRatio/(GSIRatio+1)],
         GSIScale:[1,1,GSIRatio/(GSIRatio+1)],
-        delay:prevGSIRatio < GSIRatio ? 2000 : 0 ,
+        // delay:prevGSIRatio < GSIRatio ? 2000 : 0 ,
         config:{
             duration:2000
             // duration:prevGSIRatio < GSIRatio ? 2000 : 0 

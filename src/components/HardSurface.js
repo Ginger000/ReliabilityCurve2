@@ -10,7 +10,9 @@ const HardSurface = ({position, args, color, GSIRatio}) => {
     const {hardScale} = useSpring({
         // hardScale:[1, 1, 1-GSIRatio/(GSIRatio+1)],
         hardScale:[1, 1, 1-GSIRatio/(GSIRatio+1)],
-        config:{duration:1000}
+        config:{
+            duration:1000
+        }
     })
     
     return (

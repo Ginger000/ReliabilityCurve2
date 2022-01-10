@@ -6,16 +6,19 @@ const GSIDepth = ({position, args, color, GSIRatio, prevGSIRatio, depth}) => {
     useEffect(()=>{
         mesh.current.geometry.translate(0, -1.25, 3)
     },[])
-    let a = depth/2.5
-    const {GSISoilScale} = useSpring({
 
+    console.log("prevGSIRatio", prevGSIRatio)
+    console.log("GSIRatio", GSIRatio)
+    const {GSISoilScale} = useSpring({
+        
         // GSISoilScale:[1,1,GSIRatio/(GSIRatio+1)],
         GSISoilScale:[1,depth/2.5,GSIRatio/(GSIRatio+1)],
-        delay:prevGSIRatio < GSIRatio ? 2000 : 0 ,
-        
+        // delay:prevGSIRatio < GSIRatio ? 2000 : 0 ,
+        // delay:2000,
         config:{
-            // duration:2000
-            duration:prevGSIRatio < GSIRatio ? 2000 : 1000 
+            duration:2000
+            // duration:prevGSIRatio < GSIRatio ? 2000 : 1000 
+            // duration:prevGSIRatio < GSIRatio ? 2000 : 0
         }
     })
     return (
